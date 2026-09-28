@@ -54,8 +54,16 @@ and layers over an [Omarchy](https://omarchy.org/) base install.
 
 ## Fastfetch
 
-Ships two layouts — a minimal boxed one and a sectioned Hardware/Software/Uptime
-one. It has its own installer, so the root `install.sh` above stays Hyprland-only:
+Two `fastfetch` layouts and a script to pick between them. It has its own
+installer in [Fastfetch/](Fastfetch/), so the root `install.sh` above stays
+Hyprland-only.
+
+| File | Purpose |
+| --- | --- |
+| `config1.jsonc` | Minimal layout — one bordered column beside a small ASCII logo, every label its own colour |
+| `config2.jsonc` | Sectioned layout — Hardware / Software / Uptime-Age-DateTime panels, one key colour per section |
+| `config1.png`, `config2.png` | Screenshots of each layout |
+| `install.sh` | Picks a config and copies it to `~/.config/fastfetch/config.jsonc` |
 
 ```sh
 git clone https://github.com/nightdevil00/Dotfiles.git
@@ -64,7 +72,17 @@ cd Dotfiles/Fastfetch
 ./install.sh 2        # or pass the number directly
 ```
 
-That creates `~/.config/fastfetch/` if needed and copies the chosen config to
-`~/.config/fastfetch/config.jsonc`, backing up any existing config first. Run
-`fastfetch` to try it out. See [Fastfetch/README.md](Fastfetch/README.md) for
-screenshots and the full details.
+It creates `~/.config/fastfetch/` if it doesn't exist, copies the chosen config
+to `config.jsonc`, and backs up any existing config to a timestamped
+`config.jsonc.bak.*` first. Then run `fastfetch` to try it out.
+
+Both layouts use Nerd Font icons, so your terminal font needs to be a Nerd Font
+— JetBrainsMono Nerd Font, MesloLGS NF, Iosevka Term and similar.
+
+![config1](Fastfetch/config1.png)
+
+![config2](Fastfetch/config2.png)
+
+`config2` is based on [a config by u/aayush-le](https://www.reddit.com/r/GarudaLinux/comments/1dcq0dl/making_fastfetch_more_beautiful_linux/).
+More detail, including what to tweak when editing, is in
+[Fastfetch/README.md](Fastfetch/README.md).
