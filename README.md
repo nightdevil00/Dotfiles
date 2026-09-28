@@ -7,6 +7,7 @@ Personal Linux configuration, one program per subdirectory.
 | Config | What it is |
 | --- | --- |
 | [Hyprland](Hyprland/) | Hyprland configuration and keybindings, written in Lua |
+| [Fastfetch](Fastfetch/) | Two `fastfetch` layouts with a script to pick and install one |
 
 ## Installing
 
@@ -50,3 +51,20 @@ hyprctl reload
 
 The config is written against [hyprland-lua](https://github.com/hyprwm/hyprland-lua)
 and layers over an [Omarchy](https://omarchy.org/) base install.
+
+## Fastfetch
+
+Ships two layouts — a minimal boxed one and a sectioned Hardware/Software/Uptime
+one. It has its own installer, so the root `install.sh` above stays Hyprland-only:
+
+```sh
+git clone https://github.com/nightdevil00/Dotfiles.git
+cd Dotfiles/Fastfetch
+./install.sh          # pick 1 or 2 from the menu
+./install.sh 2        # or pass the number directly
+```
+
+That creates `~/.config/fastfetch/` if needed and copies the chosen config to
+`~/.config/fastfetch/config.jsonc`, backing up any existing config first. Run
+`fastfetch` to try it out. See [Fastfetch/README.md](Fastfetch/README.md) for
+screenshots and the full details.
