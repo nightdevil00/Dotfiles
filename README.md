@@ -40,6 +40,7 @@ hyprctl reload
 | --- | --- |
 | `hyprland.lua` | Entry point; loads the rest and decides what to source from where |
 | `bindings.lua`, `bindings/` | Keybindings, split by area — applications, clipboard, media, tiling, utilities, voxtype |
+| `autostart.lua` | Extra autostart processes; ships empty with a commented `o.launch_on_start("my-service")` to copy |
 | `monitors.lua` | Monitor, mode, scale, position and transform |
 | `windows.lua` | Window rules and per-app behaviour |
 | `input.lua` | Keyboard, touchpad, mouse and stylus settings |
@@ -51,6 +52,7 @@ hyprctl reload
 
 The config is written against [hyprland-lua](https://github.com/hyprwm/hyprland-lua)
 and layers over an [Omarchy](https://omarchy.org/) base install.
+`.luarc.json` is editor metadata for Lua tooling, not part of the config.
 
 ## Fastfetch
 
