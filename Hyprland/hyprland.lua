@@ -22,6 +22,10 @@ omarchy_default_bindings = false
 -- Load Omarchy defaults.
 require("default.hypr.omarchy")
 
+-- Extend o.bind to support { menu = "..." } and { panel = "..." } table formats
+-- used by the vendored bindings below.
+require("hypr.helpers_override")
+
 -- Put your personal overrides in these files. They're loaded after Omarchy's
 -- defaults so package updates can improve the defaults without rewriting your
 -- ~/.config/hypr files.
