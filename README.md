@@ -39,15 +39,12 @@ hyprctl reload
 | File | Purpose |
 | --- | --- |
 | `hyprland.lua` | Entry point; loads the rest and decides what to source from where |
-| `bindings.lua`, `bindings/` | Keybindings, split by area — applications, clipboard, media, tiling, utilities, voxtype |
+| `bindings.lua` | Personal keybindings and overrides (e.g. headphone Play/Pause mapped to one-way `media.play` / `media.pause` actions) |
 | `autostart.lua` | Extra autostart processes; ships empty with a commented `o.launch_on_start("my-service")` to copy |
 | `monitors.lua` | Monitor, mode, scale, position and transform |
-| `windows.lua` | Window rules and per-app behaviour |
 | `input.lua` | Keyboard, touchpad, mouse and stylus settings |
-| `looknfeel.lua` | Cursor, focus, border and misc feel |
-| `animations.lua` | Window and workspace animations |
-| `nvidia.lua` | NVIDIA-specific settings |
-| `settings.lua` | Miscellaneous settings |
+| `looknfeel.lua` | Cursor, focus, border, opacity and misc feel |
+| `oma-cast.lua` | `oma-cast` launcher keybinding (Alt+Space), written by `oma-cast setup hyprland` |
 | `xdph.conf`, `hyprsunset.conf` | XWayland and blue-light / night light configuration |
 
 The config is written against [hyprland-lua](https://github.com/hyprwm/hyprland-lua)
