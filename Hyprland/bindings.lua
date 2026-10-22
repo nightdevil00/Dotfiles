@@ -1,42 +1,31 @@
--- Keybindings.
---
--- ~/.config/hypr/bindings/ holds a vendored copy of Omarchy's default
--- bindings (was /usr/share/omarchy/default/hypr/bindings). The
--- omarchy_default_bindings = false flag in hyprland.lua stops the packaged
--- originals from loading, so these files are the only source of Omarchy's
--- bindings and your edits here stick.
---
--- Loaded in sorted order: applications, clipboard, media, tiling, utilities,
--- voxtype. Personal bindings below come last, so they win any conflict.
-
-local paths = require("default.hypr.paths")
-local require_all = require("default.hypr.require_all")
-
-require_all.files(paths.config_home .. "/hypr/bindings", "hypr.bindings")
+-- Keep only your personal keybinding overrides here. Add new bindings with
+-- o.bind or replace defaults with o.rebind.
 
 -- See current bindings and descriptions:
 --   omarchy menu keybindings --print
 
+-- To disable every Omarchy default binding, set this in
+-- ~/.config/hypr/hyprland.lua before require("default.hypr.omarchy"), then add
+-- only the bindings you want below:
+--   omarchy_default_bindings = false
+
+-- To disable all preinstalled app/webapp bindings, set:
+--   omarchy_preinstalled_bindings = false
+
 -- Add a new binding.
 -- o.bind("SUPER + SHIFT + R", "SSH", "alacritty -e ssh your-server")
 
--- Change an existing binding by unbinding it first, then binding the key again.
--- This example changes SUPER+SPACE from the launcher to the Omarchy root menu.
--- hl.unbind("SUPER + SPACE")
--- o.bind("SUPER + SPACE", "Omarchy menu", "omarchy-menu toggle root")
+-- Change an existing binding. o.rebind takes the same arguments as o.bind.
+-- This example replaces the default file manager with Flea.
+-- o.rebind("SUPER + SHIFT + F", "File manager", { launch = "flea" })
 
--- Personal bindings. Everything above this line came from Omarchy; everything
--- below is yours.
+-- Disable a default binding without replacing it.
+-- hl.unbind("SUPER + SHIFT + B")
 
--- Logitech MX Keys: the Print key is remapped to the screenshot shortcut.
--- Unbind first because bindings/applications.lua binds this to Google Photos.
-hl.unbind("SUPER + SHIFT + S")
-o.bind("SUPER + SHIFT + S", nil, "omarchy-capture-screenshot")
+-- Headphone pause/play: use one-way actions so repeated events can't toggle back.
+o.rebind("XF86AudioPause", "Pause", { ipc = "media.pause" }, { locked = true })
+o.rebind("XF86AudioPlay", "Play", { ipc = "media.play" }, { locked = true })
 
--- Dictation and emoji panel.
+-- Logitech MX Keys examples:
 -- o.bind("SUPER + H", nil, "voxtype record toggle")
--- o.bind("SUPER + PERIOD", nil, "omarchy-shell shell toggle omarchy.emojis")
-
--- Keypad keys, which the MX Keys lacks.
-o.bind("SUPER +  XF86SelectiveScreenshot", nil, "omarchy-capture-screenshot")
-o.bind("SUPER +  XF86Favorites ", nil, "omarchy-capture-screenrecording")
+-- o.bind("SUPER + PERIOD", nil, { panel = "omarchy.emojis" })
