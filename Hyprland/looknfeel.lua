@@ -1,15 +1,5 @@
 -- Change the default Omarchy look'n'feel.
 
--- Opt another application in to Omarchy's standard transparency.
--- Find its class with: hyprctl clients
--- o.transparent_window("my-app")
--- o.transparent_window("my-app", "0.9 0.85") -- Custom active/inactive opacity.
-
--- Make every window fully opaque (active and inactive).
--- Rules are evaluated top to bottom, so this comes after Omarchy's default
--- transparency rules and wins for windows they match.
-o.window(".*", { opacity = "1 1" })
-
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#general
 -- hl.config({
 --   general = {
@@ -58,3 +48,11 @@ o.window(".*", { opacity = "1 1" })
 --     column_width = 0.97,
 --   },
 -- })
+
+-- Opt another application in to Omarchy's standard transparency.
+-- Find its class with: hyprctl clients
+-- o.transparent_window("my-app")
+-- o.transparent_window("my-app", "0.9 0.85") -- Custom active/inactive opacity.
+
+-- Make all windows fully opaque.
+o.window(".*", { opacity = "1 1" })

@@ -3,11 +3,11 @@
 
 -- Keyboard layout and options.
 -- See https://wiki.hypr.land/Configuring/Basics/Variables/#input
--- hl.config({
---   input = {
+hl.config({
+   input = {
 --     -- Use multiple keyboard layouts and switch between them with Left Alt + Right Alt.
---     kb_layout = "us,dk,eu",
---     kb_options = "omarchy:shift_caps_compose,grp:alts_toggle",
+     kb_layout = "us",
+     kb_options = "",
 --
 --     -- Use a specific keyboard variant if needed (e.g. intl for international keyboards).
 --     kb_variant = "intl",
@@ -17,7 +17,7 @@
 --     repeat_delay = 250,
 --
 --     -- Start with numlock on by default.
---     numlock_by_default = true,
+     numlock_by_default = true,
 --
 --     -- Increase sensitivity for mouse/trackpad (default: 0).
 --     sensitivity = 0.35,
@@ -40,18 +40,20 @@
 --
 --       -- Left-click-and-drag with three fingers.
 --       drag_3fg = 1,
---     },
---   },
--- })
+  --},
+  },
+ })
 
 -- App-specific touchpad scroll speeds.
--- o.window("(Alacritty|kitty)", { scroll_touchpad = 1.5 })
--- o.window("foot", { scroll_touchpad = 2.0 })
+-- o.window("(Alacritty|kitty|foot)", { scroll_touchpad = 1.5 })
 -- o.window("com.mitchellh.ghostty", { scroll_touchpad = 0.2 })
 
 -- Enable touchpad gestures for changing workspaces.
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Gestures/
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+-- Three-finger swipe up fans the open windows out like a card hand (mihai.cards).
+--hl.gesture({ fingers = 3, direction = "up", action = function() hl.exec_cmd("omarchy-shell shell summon mihai.cards '{}'") end })
 
 -- Enable touchpad gestures for moving focus (helpful on scrolling layout).
 -- hl.gesture({ fingers = 3, direction = "left", action = function() hl.dispatch(hl.dsp.focus({ direction = "l" })) end })
