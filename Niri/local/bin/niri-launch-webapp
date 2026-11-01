@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Launch a URL as a frameless web app in a Chromium-based browser.
+
+url=${1:-}
+if [[ -z $url ]]; then
+  echo "Usage: niri-launch-webapp <url> [browser-flags...]" >&2
+  exit 1
+fi
+
+browser=${NIRI_WEBAPP_BROWSER:-}
+if [[ -z $browser ]]; then
+  for candidate in google-chrome-stable google-chrome chromium chromium-browser brave-browser microsoft-edge vivaldi-stable opera; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      browser=$candidate
+      break
+    fi
+  done
+fi
+
+if [[ -z $browser ]]; then
+  echo "niri-launch-webapp: no Chromium-based browser found" >&2
+  exit 1
+fi
+
+exec setsid "$browser" --app="$url" "${@:2}"

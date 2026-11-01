@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Print the window app-id Chromium gives a web app opened at a URL.
+# Niri reports this as the window's App ID.
+
+url=${1:-}
+if [[ -z $url ]]; then
+  echo "Usage: webapp-window-class <url>" >&2
+  exit 1
+fi
+
+address=${url#*://}
+address=${address%%[?#]*}
+host=${address%%/*}
+path=${address:${#host}}
+host=${host##*@}
+host=${host%%:*}
+
+printf 'chrome-%s_%s-Default\n' "${host,,}" "${path:-/}" | sed 's|/|_|g'

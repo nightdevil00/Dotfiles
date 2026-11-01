@@ -11,6 +11,10 @@ plugins, and the Omarchy-style universal clipboard helper from this machine.
 | `config/noctalia/config.toml` | `~/.config/noctalia/config.toml` | Noctalia boot configuration (polkit agent) |
 | `local/state/noctalia/settings.toml` | `~/.local/state/noctalia/settings.toml` | Active Noctalia settings: bar, theme, wallpaper, plugins, clipboard |
 | `local/bin/niri-universal-clipboard` | `~/.local/bin/niri-universal-clipboard` | `Super+A/C/X/V` clipboard helper used by `cfg/keybinds.kdl` |
+| `local/bin/niri-launch-webapp` | `~/.local/bin/niri-launch-webapp` | Launch a URL as a frameless Chromium web app |
+| `local/bin/webapp-install` | `~/.local/bin/webapp-install` | Create a `.desktop` launcher for a web app |
+| `local/bin/webapp-remove` | `~/.local/bin/webapp-remove` | Remove an installed web app launcher |
+| `local/bin/webapp-window-class` | `~/.local/bin/webapp-window-class` | Compute the window class for a web app URL |
 | `local/bin/noctalia-theme-sync-chrome` | `~/.local/bin/noctalia-theme-sync-chrome` | Syncs the Noctalia shell accent color to Chromium/Chrome/Edge/Brave via enterprise policy |
 | `local/state/noctalia/plugins/materialized/community/` | `~/.local/state/noctalia/plugins/materialized/community/` | DropWall, Niri Animations, and Spotify Media plugins |
 | `config/systemd/user/noctalia-chrome-sync.{path,service}` | `~/.config/systemd/user/` | Auto-sync Noctalia accent color to Chromium-based browsers |
@@ -41,6 +45,7 @@ From this directory:
 ./install.sh --noctalia      # Noctalia config + settings
 ./install.sh --clipboard     # universal clipboard helper
 ./install.sh --plugins       # the three enabled Noctalia plugins
+./install.sh --webapps       # web app launcher helpers
 ```
 
 Useful options:

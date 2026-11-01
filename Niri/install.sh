@@ -10,6 +10,7 @@
 #   ./install.sh --noctalia      Noctalia config + active settings
 #   ./install.sh --clipboard     universal clipboard helper
 #   ./install.sh --plugins       enabled community Noctalia plugins
+#   ./install.sh --webapps       web app launcher helpers
 #   ./install.sh --list          show components and destinations
 #
 # Options:
@@ -35,6 +36,10 @@ SRC_CLIPBOARD="$SCRIPT_DIR/local/bin/niri-universal-clipboard"
 SRC_SCREENREC="$SCRIPT_DIR/local/bin/niri-screen-record"
 SRC_PLUGINS="$SCRIPT_DIR/local/state/noctalia/plugins/materialized/community"
 SRC_SYNC="$SCRIPT_DIR/local/bin/noctalia-theme-sync-chrome"
+SRC_WEBAPP_LAUNCH="$SCRIPT_DIR/local/bin/niri-launch-webapp"
+SRC_WEBAPP_CLASS="$SCRIPT_DIR/local/bin/webapp-window-class"
+SRC_WEBAPP_INSTALL="$SCRIPT_DIR/local/bin/webapp-install"
+SRC_WEBAPP_REMOVE="$SCRIPT_DIR/local/bin/webapp-remove"
 SRC_SYSTEMD="$SCRIPT_DIR/config/systemd/user"
 
 DEST_NIRI="$CONFIG_HOME/niri"
@@ -44,6 +49,10 @@ DEST_CLIPBOARD="$BIN_HOME/niri-universal-clipboard"
 DEST_SCREENREC="$BIN_HOME/niri-screen-record"
 DEST_PLUGINS="$STATE_HOME/noctalia/plugins/materialized/community"
 DEST_SYNC="$BIN_HOME/noctalia-theme-sync-chrome"
+DEST_WEBAPP_LAUNCH="$BIN_HOME/niri-launch-webapp"
+DEST_WEBAPP_CLASS="$BIN_HOME/webapp-window-class"
+DEST_WEBAPP_INSTALL="$BIN_HOME/webapp-install"
+DEST_WEBAPP_REMOVE="$BIN_HOME/webapp-remove"
 DEST_SYSTEMD="$CONFIG_HOME/systemd/user"
 
 dry_run=false
@@ -81,13 +90,14 @@ component_paths() {
     noctalia) printf '%s\n' "$DEST_NOCTALIA and $DEST_SETTINGS" ;;
     clipboard) printf '%s\n' "$DEST_CLIPBOARD" ;;
     plugins) printf '%s\n' "$DEST_PLUGINS" ;;
+    webapps) printf '%s\n' "$DEST_WEBAPP_LAUNCH $DEST_WEBAPP_CLASS $DEST_WEBAPP_INSTALL $DEST_WEBAPP_REMOVE" ;;
     *) return 1 ;;
   esac
 }
 
 validate_component() {
   case "$1" in
-    niri | noctalia | clipboard | plugins) return 0 ;;
+    niri | noctalia | clipboard | plugins | webapps) return 0 ;;
     *)
       printf 'error: unknown component "%s"\n' "$1" >&2
       return 1
@@ -110,6 +120,7 @@ show_list() {
   printf '  noctalia   %s\n' "$(component_paths noctalia)"
   printf '  clipboard  %s\n' "$(component_paths clipboard)"
   printf '  plugins    %s\n' "$(component_paths plugins)"
+  printf '  webapps    %s\n' "$(component_paths webapps)"
   printf '\nPaths honor XDG_CONFIG_HOME and XDG_STATE_HOME. The clipboard helper always installs to $HOME/.local/bin to match niri keybinds.\n'
 }
 
@@ -125,6 +136,7 @@ choose_interactively() {
   printf '                           %s\n' "$DEST_SETTINGS"
   printf '  3) Universal clipboard   %s\n' "$DEST_CLIPBOARD"
   printf '  4) Noctalia plugins      %s\n' "$DEST_PLUGINS"
+printf '  5) Web app helpers       %s\n' "$DEST_WEBAPP_LAUNCH"
   printf '\nEnter numbers separated by spaces, or "all" [default: all]: '
 
   local selection
@@ -139,6 +151,7 @@ choose_interactively() {
     add_component noctalia
     add_component clipboard
     add_component plugins
+    add_component webapps
     return
   fi
 
@@ -149,8 +162,9 @@ choose_interactively() {
       2) add_component noctalia ;;
       3) add_component clipboard ;;
       4) add_component plugins ;;
+      5) add_component webapps ;;
       *)
-        printf 'error: invalid selection "%s" (expected 1-4 or all)\n' "$token" >&2
+        printf 'error: invalid selection "%s" (expected 1-5 or all)\n' "$token" >&2
         exit 1
         ;;
     esac
@@ -262,6 +276,14 @@ install_clipboard() {
   install_file "$SRC_SCREENREC" "$DEST_SCREENREC" 755
 }
 
+install_webapps() {
+  printf '\nWeb app helpers\n'
+  install_file "$SRC_WEBAPP_LAUNCH" "$DEST_WEBAPP_LAUNCH" 755
+  install_file "$SRC_WEBAPP_CLASS" "$DEST_WEBAPP_CLASS" 755
+  install_file "$SRC_WEBAPP_INSTALL" "$DEST_WEBAPP_INSTALL" 755
+  install_file "$SRC_WEBAPP_REMOVE" "$DEST_WEBAPP_REMOVE" 755
+}
+
 install_plugins() {
   printf '\nNoctalia community plugins\n'
   install_tree "$SRC_PLUGINS" "$DEST_PLUGINS"
@@ -337,11 +359,13 @@ while (($# > 0)); do
       add_component noctalia
       add_component clipboard
       add_component plugins
+      add_component webapps
       ;;
     --niri) add_component niri ;;
     --noctalia) add_component noctalia ;;
     --clipboard) add_component clipboard ;;
     --plugins) add_component plugins ;;
+    --webapps) add_component webapps ;;
     --dry-run | -n) dry_run=true ;;
     --force | -f) force=true ;;
     --no-reload) reload=false ;;
@@ -372,6 +396,7 @@ for component in "${components[@]}"; do
     noctalia) install_noctalia ;;
     clipboard) install_clipboard ;;
     plugins) install_plugins ;;
+    webapps) install_webapps ;;
   esac
 done
 
