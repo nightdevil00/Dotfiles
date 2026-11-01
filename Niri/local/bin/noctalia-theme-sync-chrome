@@ -41,7 +41,7 @@ PY
 import json,sys,re
 try:
     with open(sys.argv[1]) as f: d=json.load(f)
-    for key in ('primary','mPrimary','accent','color'):
+    for key in ('surface','primary','mPrimary','accent','color'):
         if key in d:
             v=str(d[key])
             m=re.search(r'#([0-9a-fA-F]{6})', v)
@@ -68,7 +68,7 @@ import json,sys,re
 try:
     with open(sys.argv[1],'rb') as f:
         d=json.loads(f.read().decode('utf-8'))
-    for key in ('mTertiary','mHover','mPrimary'):
+    for key in ('mSurface','mTertiary','mHover','mPrimary'):
         try:
             c=d['dark'][key]
             m=re.search(r'#([0-9a-fA-F]{6})', str(c))
@@ -109,7 +109,7 @@ import json,sys,re
 try:
     with open(sys.argv[1],'rb') as f:
         d=json.loads(f.read().decode('utf-8'))
-    for key in ('mTertiary','mPrimary'):
+    for key in ('mSurface','mTertiary','mPrimary'):
         try:
             c=d['dark'][key]
             m=re.search(r'#([0-9a-fA-F]{6})', str(c))
