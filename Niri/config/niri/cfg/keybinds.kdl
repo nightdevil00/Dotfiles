@@ -160,6 +160,7 @@ binds {
     CTRL+Shift+2                        { screenshot-screen; }
     CTRL+Shift+3                        { screenshot-window; }
     XF86SelectiveScreenshot              { screenshot; }
+    XF86Favorites                       hotkey-overlay-title="Screen Recording: OBS" { spawn-sh "$HOME/.local/bin/niri-screen-record"; }
 
     // ─── Emergency Escape Key ───
     // Use this when a fullscreen app blocks your keybinds.

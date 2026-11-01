@@ -32,6 +32,7 @@ SRC_NIRI="$SCRIPT_DIR/config/niri"
 SRC_NOCTALIA="$SCRIPT_DIR/config/noctalia"
 SRC_SETTINGS="$SCRIPT_DIR/local/state/noctalia/settings.toml"
 SRC_CLIPBOARD="$SCRIPT_DIR/local/bin/niri-universal-clipboard"
+SRC_SCREENREC="$SCRIPT_DIR/local/bin/niri-screen-record"
 SRC_PLUGINS="$SCRIPT_DIR/local/state/noctalia/plugins/materialized/community"
 SRC_SYNC="$SCRIPT_DIR/local/bin/noctalia-theme-sync-chrome"
 SRC_SYSTEMD="$SCRIPT_DIR/config/systemd/user"
@@ -40,6 +41,7 @@ DEST_NIRI="$CONFIG_HOME/niri"
 DEST_NOCTALIA="$CONFIG_HOME/noctalia"
 DEST_SETTINGS="$STATE_HOME/noctalia/settings.toml"
 DEST_CLIPBOARD="$BIN_HOME/niri-universal-clipboard"
+DEST_SCREENREC="$BIN_HOME/niri-screen-record"
 DEST_PLUGINS="$STATE_HOME/noctalia/plugins/materialized/community"
 DEST_SYNC="$BIN_HOME/noctalia-theme-sync-chrome"
 DEST_SYSTEMD="$CONFIG_HOME/systemd/user"
@@ -257,6 +259,7 @@ install_noctalia() {
 install_clipboard() {
   printf '\nUniversal clipboard helper\n'
   install_file "$SRC_CLIPBOARD" "$DEST_CLIPBOARD" 755
+  install_file "$SRC_SCREENREC" "$DEST_SCREENREC" 755
 }
 
 install_plugins() {

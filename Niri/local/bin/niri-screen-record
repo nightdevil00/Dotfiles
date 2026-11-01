@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Toggle screen recording via OBS Studio.
+# First press launches OBS and starts recording; subsequent presses are ignored
+# while OBS is running (stop via OBS's Stop button or by closing OBS).
+if pgrep -x obs >/dev/null 2>&1; then
+    # OBS already running; focus it so the user can stop recording.
+    niri msg action focus-window --app-id obs 2>/dev/null || true
+    exit 0
+fi
+exec obs --startrecording
