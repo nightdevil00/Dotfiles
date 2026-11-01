@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
-# Toggle screen recording via OBS Studio.
-# First press launches OBS and starts recording; subsequent presses are ignored
-# while OBS is running (stop via OBS's Stop button or by closing OBS).
-if pgrep -x obs >/dev/null 2>&1; then
-    # OBS already running; focus it so the user can stop recording.
-    niri msg action focus-window --app-id obs 2>/dev/null || true
+# Toggle screen recording via GPU Screen Recorder.
+# First press: interactive region picker (portal) + start recording.
+# Subsequent press while recording: stop and save.
+PIDFILE="$HOME/.cache/niri-screen-record.pid"
+OUTDIR="$HOME/Videos/Recordings"
+mkdir -p "$OUTDIR"
+
+if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+    kill -INT "$(cat "$PIDFILE")" 2>/dev/null
+    rm -f "$PIDFILE"
+    notify-send "Screen recording stopped" 2>/dev/null || true
     exit 0
 fi
-exec obs --startrecording
+
+OUTFILE="$OUTDIR/recording-$(date +%Y-%m-%d_%H-%M-%S).mp4"
+gpu-screen-recorder -w portal -f 60 -a default_output -o "$OUTFILE" &
+echo $! > "$PIDFILE"
+notify-send "Screen recording started" "$OUTFILE" 2>/dev/null || true
