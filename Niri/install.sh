@@ -311,6 +311,7 @@ check_dependencies() {
 
   command -v niri >/dev/null 2>&1 || missing+=(niri)
   command -v noctalia >/dev/null 2>&1 || missing+=(noctalia)
+  command -v gpu-screen-recorder >/dev/null 2>&1 || missing+=(gpu-screen-recorder)
 
   for component in "${components[@]}"; do
     [[ $component == clipboard ]] && need_wtype=true && need_jq=true
@@ -386,6 +387,8 @@ else
   printf 'Installed %d file(s).\n' "$changed_files"
 fi
 
+printf '\nNote: screen recording (XF86Favorites) requires gpu-screen-recorder.\n'
+printf 'Install with: sudo pacman -S --needed gpu-screen-recorder gpu-screen-recorder-ui\n\n'
 printf '\nNote: display.kdl and Noctalia settings.toml contain this machine'"'"'s\n'
 printf 'monitor names and wallpaper paths. Adjust them after installing on\n'
 printf 'different hardware.\n'
