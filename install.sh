@@ -1,82 +1,104 @@
 #!/usr/bin/env bash
-# Install this Hyprland configuration into ~/.config/hypr
 #
-#   ./install.sh              back up the current config, then install
-#   ./install.sh --dry-run    show what would change, touch nothing
-#   ./install.sh --force      install without backing up first
+# Install configurations from this repository.
 #
-# Your existing ~/.config/hypr is copied to a timestamped backup before
-# anything is overwritten, so this is safe to run on a machine you already
-# have configured.
+#   ./install.sh                 interactive picker
+#   ./install.sh hyprland [opts] Hyprland config -> ~/.config/hypr
+#   ./install.sh niri [opts]     Niri + Noctalia config
+#   ./install.sh fastfetch [n]   Fastfetch config picker
+#   ./install.sh all [opts]      Hyprland + full Niri/Noctalia setup
+#
+# Options are passed through to the selected installer:
+#   --dry-run, -n   show what would change, write nothing
+#   --force, -f     overwrite without backups
+#
+# Fastfetch also keeps its own installer: ./Fastfetch/install.sh
 
 set -euo pipefail
 
-SRC="$(cd "$(dirname "$0")" && pwd)/Hyprland"
-DEST="$HOME/.config/hypr"
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-dry_run=false
-force=false
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run|-n) dry_run=true ;;
-    --force|-f)   force=true ;;
-    -h|--help)    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *)            echo "unknown option: $arg" >&2; exit 1 ;;
-  esac
-done
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [target] [options]
 
-[[ -d $SRC ]] || { echo "error: $SRC not found" >&2; exit 1; }
+Targets:
+  hyprland, hypr, h   Install the Hyprland config
+  niri, n             Install the Niri + Noctalia config
+  fastfetch, f        Install a Fastfetch layout
+  all, a              Hyprland + full Niri/Noctalia setup
 
-files=$(cd "$SRC" && find . -type f | sed 's|^\./||' | sort)
-count=$(printf '%s\n' "$files" | grep -c . || true)
+Options:
+  --dry-run, -n       Show what would change, write nothing
+  --force, -f         Overwrite without backups
+  -h, --help          Show this help
 
-echo "Source: $SRC"
-echo "Target: $DEST"
-echo "Files:  $count"
-echo
+With no target, an interactive picker is shown. With no target but options
+such as --dry-run, the Hyprland installer is used for backward compatibility.
+EOF
+}
 
-changed=0
-while IFS= read -r f; do
-  [[ -n $f ]] || continue
-  if [[ -f "$DEST/$f" ]] && cmp -s "$SRC/$f" "$DEST/$f"; then
-    printf '  same     %s\n' "$f"
-  else
-    printf '  %-7s %s\n' "$([ -f "$DEST/$f" ] && echo update || echo install)" "$f"
-    changed=$((changed + 1))
+pick_interactively() {
+  if [[ ! -t 0 ]]; then
+    printf 'error: no target selected (use hyprland, niri, fastfetch, or all)\n' >&2
+    usage >&2
+    exit 1
   fi
-done <<< "$files"
 
-if [[ -d $DEST ]] && [[ $changed -gt 0 ]] && ! $dry_run && ! $force; then
-  backup="$HOME/.config/hypr.backup-$(date +%Y%m%d-%H%M%S)"
-  echo
-  echo "Backing up current config to $backup"
-  cp -a "$DEST" "$backup"
-  echo "  (restore with: cp -a '$backup' '$DEST')"
-fi
+  printf 'Dotfiles installer\n\n'
+  printf '  1) Hyprland\n'
+  printf '  2) Niri + Noctalia\n'
+  printf '  3) Fastfetch\n'
+  printf '  4) Hyprland + Niri/Noctalia\n'
+  printf '\nChoose [1-4]: '
 
-if $dry_run; then
-  echo
-  echo "Dry run — $changed file(s) would change. Nothing was written."
-  exit 0
-fi
+  local choice
+  read -r choice || {
+    printf '\nAborted.\n'
+    exit 1
+  }
 
-if [[ $changed -eq 0 ]]; then
-  echo
-  echo "Already up to date."
-  exit 0
-fi
+  case "$choice" in
+    1) exec "$ROOT/Hyprland/install.sh" ;;
+    2) exec "$ROOT/Niri/install.sh" ;;
+    3) exec "$ROOT/Fastfetch/install.sh" ;;
+    4) exec "$ROOT/install.sh" all ;;
+    *)
+      printf 'error: invalid choice "%s"\n' "$choice" >&2
+      exit 1
+      ;;
+  esac
+}
 
-mkdir -p "$DEST"
-while IFS= read -r f; do
-  [[ -n $f ]] || continue
-  mkdir -p "$DEST/$(dirname "$f")"
-  cp "$SRC/$f" "$DEST/$f"
-done <<< "$files"
+(($# > 0)) || pick_interactively
 
-echo "Installed $changed file(s) into $DEST"
-echo
-if command -v hyprctl >/dev/null; then
-  echo "Apply them with:  hyprctl reload"
-else
-  echo "hyprctl not found on PATH. Log out and back in to pick up the config."
-fi
+target="$1"
+shift
+
+case "$target" in
+  hyprland | hypr | h)
+    exec "$ROOT/Hyprland/install.sh" "$@"
+    ;;
+  niri | n)
+    exec "$ROOT/Niri/install.sh" "$@"
+    ;;
+  fastfetch | f)
+    exec "$ROOT/Fastfetch/install.sh" "$@"
+    ;;
+  all | a)
+    "$ROOT/Hyprland/install.sh" "$@"
+    "$ROOT/Niri/install.sh" --all "$@"
+    ;;
+  -h | --help)
+    usage
+    ;;
+  -*)
+    # Older usage was `./install.sh --dry-run`, which meant Hyprland.
+    exec "$ROOT/Hyprland/install.sh" "$target" "$@"
+    ;;
+  *)
+    printf 'error: unknown target "%s"\n\n' "$target" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

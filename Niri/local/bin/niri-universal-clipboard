@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Omarchy-style universal clipboard shortcuts for niri.
+#
+# Omarchy maps Super+C/V/X/A to the clipboard chords the focused app expects:
+# Ctrl+C/V/X/A normally, Ctrl+Shift+C/V in terminals. niri has no equivalent of
+# Hyprland's send_key_state, so inject the chord with wtype's virtual keyboard.
+#
+# Usage: niri-universal-clipboard copy|cut|paste|select-all
+
+set -euo pipefail
+
+action=${1:-}
+
+case "$action" in
+  copy | cut | paste | select-all) ;;
+  *)
+    echo "Usage: ${0##*/} copy|cut|paste|select-all" >&2
+    exit 2
+    ;;
+esac
+
+command -v wtype >/dev/null || {
+  echo "${0##*/}: wtype is required (sudo pacman -S wtype)" >&2
+  exit 1
+}
+
+app_id=${UNIVERSAL_CLIPBOARD_APP_ID:-}
+if [[ -z $app_id ]]; then
+  app_id=$(niri msg --json focused-window 2>/dev/null | jq -r '.app_id // empty' 2>/dev/null || true)
+fi
+
+is_terminal() {
+  local app=${1,,}
+
+  case "$app" in
+    alacritty | *alacritty* | kitty | *kitty* | foot | footclient | *foot* | \
+      ghostty | *ghostty* | wezterm | *wezterm* | xterm* | urxvt* | st | \
+      *terminal* | *konsole* | *terminator* | *tilix* | *termite* | \
+      *console* | *blackbox* | *tabby* | *warp* | *hyper*)
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+key=
+shift=false
+
+case "$action" in
+  select-all)
+    # Same as Omarchy: always Ctrl+A. In a shell this moves to line start, which
+    # is why Super+A followed by Super+C does not select a terminal buffer.
+    key=a
+    ;;
+  cut)
+    # Same as Omarchy: always Ctrl+X.
+    key=x
+    ;;
+  copy)
+    key=c
+    is_terminal "$app_id" && shift=true
+    ;;
+  paste)
+    key=v
+    is_terminal "$app_id" && shift=true
+    ;;
+esac
+
+mods=(ctrl)
+$shift && mods+=(shift)
+
+args=()
+for mod in "${mods[@]}"; do
+  args+=(-M "$mod")
+done
+args+=(-k "$key")
+for ((i = ${#mods[@]} - 1; i >= 0; i--)); do
+  args+=(-m "${mods[$i]}")
+done
+
+if [[ ${UNIVERSAL_CLIPBOARD_DRY_RUN:-0} == 1 ]]; then
+  printf 'app_id=%s chord=%s+%s\n' "${app_id:-<none>}" "$(IFS=+; echo "${mods[*]}")" "$key"
+  printf 'wtype'
+  printf ' %q' "${args[@]}"
+  printf '\n'
+  exit 0
+fi
+
+exec wtype "${args[@]}"

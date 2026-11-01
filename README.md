@@ -7,6 +7,7 @@ Personal Linux configuration, one program per subdirectory.
 | Config | What it is |
 | --- | --- |
 | [Hyprland](Hyprland/) | Hyprland configuration and keybindings, written in Lua |
+| [Niri](Niri/) | Niri compositor config, Noctalia shell settings, plugins, and universal clipboard |
 | [Fastfetch](Fastfetch/) | Two `fastfetch` layouts with a script to pick and install one |
 
 ## Installing
@@ -17,22 +18,45 @@ cd Dotfiles
 ./install.sh
 ```
 
-`install.sh` copies the files into `~/.config/hypr`. It backs up whatever is
-already there to a timestamped directory first, so it is safe to run on a
-machine you have already configured:
+`install.sh` opens a picker:
+
+1. Hyprland
+2. Niri + Noctalia
+3. Fastfetch
+4. Hyprland + Niri/Noctalia
+
+You can also pick a target directly:
 
 ```sh
-./install.sh --dry-run    # show what would change, write nothing
-./install.sh --force      # skip the backup
+./install.sh hyprland
+./install.sh niri
+./install.sh fastfetch
+./install.sh all
 ```
 
-Re-running is safe — identical files are reported as unchanged and skipped.
-
-Then apply the config without logging out:
+Every installer backs up the existing destination to a timestamped path before
+overwriting it, so they are safe to run on an already configured machine:
 
 ```sh
-hyprctl reload
+./install.sh niri --all --dry-run    # show what would change, write nothing
+./install.sh niri --all --force      # skip the backup
 ```
+
+Re-running is safe: identical files are reported as unchanged and skipped.
+The Niri installer also accepts component flags such as `--niri`,
+`--noctalia`, `--clipboard`, `--plugins`, and `--all`; see
+[Niri/README.md](Niri/README.md).
+
+After installing, reload the running session:
+
+```sh
+hyprctl reload                     # Hyprland
+niri msg action load-config-file   # Niri
+noctalia msg config-reload         # Noctalia settings
+```
+
+The installers do the reload automatically when the corresponding service is
+running, unless `--no-reload` is passed to the Niri installer.
 
 ## Hyprland
 
@@ -51,11 +75,44 @@ The config is written against [hyprland-lua](https://github.com/hyprwm/hyprland-
 and layers over an [Omarchy](https://omarchy.org/) base install.
 `.luarc.json` is editor metadata for Lua tooling, not part of the config.
 
+## Niri + Noctalia
+
+The Niri package mirrors the real destination layout, so the installer only has
+to map `config/` to `~/.config/` and `local/` to `~/.local/`.
+
+| File | Installed to | Purpose |
+| --- | --- | --- |
+| `config/niri/` | `~/.config/niri/` | `config.kdl`, split `cfg/*.kdl`, and Noctalia's generated `noctalia.kdl` |
+| `config/noctalia/config.toml` | `~/.config/noctalia/config.toml` | Noctalia boot config (polkit agent) |
+| `local/state/noctalia/settings.toml` | `~/.local/state/noctalia/settings.toml` | Active Noctalia settings: bar, theme, wallpaper, plugins, clipboard |
+| `local/bin/niri-universal-clipboard` | `~/.local/bin/niri-universal-clipboard` | Omarchy-style `Super+A/C/X/V` helper |
+| `local/state/noctalia/plugins/materialized/community/` | same path under `~/.local/state/` | DropWall, Niri Animations, and Spotify Media plugins |
+
+The clipboard bindings are:
+
+| Key | Action |
+| --- | --- |
+| `Super+A` | Select all |
+| `Super+C` | Copy (`Ctrl+Shift+C` in terminals) |
+| `Super+X` | Cut |
+| `Super+V` | Paste (`Ctrl+Shift+V` in terminals) |
+| `Super+Ctrl+V` | Noctalia clipboard history |
+
+`Super+C` used to be `center-column`; that moved to `Super+Shift+C`.
+Clipboard history needs Noctalia, and the helper needs `wtype` and `jq`:
+
+```sh
+sudo pacman -S --needed niri noctalia wtype jq
+```
+
+Private state such as clipboard history, notification history, launcher usage,
+wallpaper images, and Noctalia's download caches is intentionally not copied.
+See [Niri/README.md](Niri/README.md) for the full component list and
+machine-specific notes.
+
 ## Fastfetch
 
-Two `fastfetch` layouts and a script to pick between them. It has its own
-installer in [Fastfetch/](Fastfetch/), so the root `install.sh` above stays
-Hyprland-only.
+Two `fastfetch` layouts and a script to pick between them.
 
 | File | Purpose |
 | --- | --- |
@@ -65,7 +122,6 @@ Hyprland-only.
 | `install.sh` | Picks a config and copies it to `~/.config/fastfetch/config.jsonc` |
 
 ```sh
-git clone https://github.com/nightdevil00/Dotfiles.git
 cd Dotfiles/Fastfetch
 ./install.sh          # pick 1 or 2 from the menu
 ./install.sh 2        # or pass the number directly
