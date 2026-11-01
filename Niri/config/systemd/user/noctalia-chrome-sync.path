@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch for Noctalia color changes
+
+[Path]
+PathModified=%h/.local/state/noctalia/settings.toml
+PathModified=%h/.local/state/noctalia/community-palettes
+PathModified=%h/.config/noctalia
+
+[Install]
+WantedBy=default.target

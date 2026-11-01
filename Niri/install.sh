@@ -33,12 +33,16 @@ SRC_NOCTALIA="$SCRIPT_DIR/config/noctalia"
 SRC_SETTINGS="$SCRIPT_DIR/local/state/noctalia/settings.toml"
 SRC_CLIPBOARD="$SCRIPT_DIR/local/bin/niri-universal-clipboard"
 SRC_PLUGINS="$SCRIPT_DIR/local/state/noctalia/plugins/materialized/community"
+SRC_SYNC="$SCRIPT_DIR/local/bin/noctalia-theme-sync-chrome"
+SRC_SYSTEMD="$SCRIPT_DIR/config/systemd/user"
 
 DEST_NIRI="$CONFIG_HOME/niri"
 DEST_NOCTALIA="$CONFIG_HOME/noctalia"
 DEST_SETTINGS="$STATE_HOME/noctalia/settings.toml"
 DEST_CLIPBOARD="$BIN_HOME/niri-universal-clipboard"
 DEST_PLUGINS="$STATE_HOME/noctalia/plugins/materialized/community"
+DEST_SYNC="$BIN_HOME/noctalia-theme-sync-chrome"
+DEST_SYSTEMD="$CONFIG_HOME/systemd/user"
 
 dry_run=false
 force=false
@@ -246,6 +250,8 @@ install_noctalia() {
   printf '\nNoctalia shell\n'
   install_tree "$SRC_NOCTALIA" "$DEST_NOCTALIA"
   install_file "$SRC_SETTINGS" "$DEST_SETTINGS" 644
+  install_file "$SRC_SYNC" "$DEST_SYNC" 755
+  install_tree "$SRC_SYSTEMD" "$DEST_SYSTEMD"
 }
 
 install_clipboard() {
@@ -283,6 +289,14 @@ reload_services() {
   if $need_noctalia && command -v noctalia >/dev/null 2>&1; then
     if noctalia msg config-reload >/dev/null 2>&1; then
       printf 'Reloaded Noctalia config.\n'
+    fi
+  fi
+
+  if $need_noctalia && command -v systemctl >/dev/null 2>&1; then
+    if [[ -f "$DEST_SYSTEMD/noctalia-chrome-sync.path" ]]; then
+      systemctl --user daemon-reload >/dev/null 2>&1 || true
+      systemctl --user enable --now noctalia-chrome-sync.path >/dev/null 2>&1 && \
+        printf 'Enabled Noctalia Chrome theme sync.\n' || true
     fi
   fi
 }

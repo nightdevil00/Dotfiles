@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+color=""
+
+# Active color scheme: "<source> <name>"
+scheme_info=$(noctalia msg color-scheme-get 2>/dev/null || echo "community Tokyo Night Moon")
+source_type=$(echo "$scheme_info" | awk '{print $1}')
+source_name=$(echo "$scheme_info" | cut -d' ' -f2-)
+
+settings="/home/mihai/.local/state/noctalia/settings.toml"
+
+case "$source_type" in
+  wallpaper)
+    # Get wallpaper path
+    wp=""
+    if [[ -f "$settings" ]]; then
+      wp=$(python3 - "$settings" << 'PY'
+import re,sys
+try:
+    with open(sys.argv[1]) as f: txt=f.read()
+    m=re.search(r'^path\s*=\s*"([^"]+)"', txt, re.M)
+    if m: print(m.group(1)); 
+    else:
+        m=re.search(r'path\s*=\s*"([^"]+)"', txt)
+        if m: print(m.group(1))
+except Exception:
+    pass
+PY
+      )
+    fi
+    # scheme name (e.g. vibrant) -> pass to noctalia theme
+    gen_scheme="$source_name"
+    [[ -z "$gen_scheme" ]] && gen_scheme="vibrant"
+    tmp=$(mktemp)
+    if [[ -n "$wp" && -f "$wp" ]]; then
+      noctalia theme "$wp" --scheme "$gen_scheme" --dark -o "$tmp" >/dev/null 2>&1 || true
+    fi
+    if [[ -s "$tmp" ]]; then
+      color=$(python3 - "$tmp" << 'PY'
+import json,sys,re
+try:
+    with open(sys.argv[1]) as f: d=json.load(f)
+    for key in ('primary','mPrimary','accent','color'):
+        if key in d:
+            v=str(d[key])
+            m=re.search(r'#([0-9a-fA-F]{6})', v)
+            if m: print(m.group(1).lower()); sys.exit(0)
+except Exception:
+    pass
+PY
+      )
+    fi
+    rm -f "$tmp"
+    ;;
+  community)
+    pname="$source_name"
+    [[ -z "$pname" ]] && pname="Tokyo Night Moon"
+    pfile=$(python3 - "$pname" << 'PY'
+import urllib.parse,sys
+print(urllib.parse.quote(sys.argv[1], safe='') + '.json')
+PY
+    )
+    palette="/home/mihai/.local/state/noctalia/community-palettes/${pfile}"
+    if [[ -f "$palette" ]]; then
+      color=$(python3 - "$palette" << 'PY'
+import json,sys,re
+try:
+    with open(sys.argv[1],'rb') as f:
+        d=json.loads(f.read().decode('utf-8'))
+    for key in ('mTertiary','mHover','mPrimary'):
+        try:
+            c=d['dark'][key]
+            m=re.search(r'#([0-9a-fA-F]{6})', str(c))
+            if m: print(m.group(1).lower()); sys.exit(0)
+        except Exception:
+            continue
+except Exception:
+    pass
+PY
+      )
+    fi
+    ;;
+  builtin|*)
+    # Noctalia builtin theme colors aren't exposed; fall back to community palette accent
+    pname=""
+    if [[ -f "$settings" ]]; then
+      pname=$(python3 - "$settings" << 'PY'
+import re,sys
+try:
+    with open(sys.argv[1]) as f: txt=f.read()
+    m=re.search(r'community_palette\s*=\s*"([^"]+)"', txt)
+    if m: print(m.group(1))
+except Exception:
+    pass
+PY
+      )
+    fi
+    [[ -z "$pname" ]] && pname="Tokyo Night Moon"
+    pfile=$(python3 - "$pname" << 'PY'
+import urllib.parse,sys
+print(urllib.parse.quote(sys.argv[1], safe='') + '.json')
+PY
+    )
+    palette="/home/mihai/.local/state/noctalia/community-palettes/${pfile}"
+    if [[ -f "$palette" ]]; then
+      color=$(python3 - "$palette" << 'PY'
+import json,sys,re
+try:
+    with open(sys.argv[1],'rb') as f:
+        d=json.loads(f.read().decode('utf-8'))
+    for key in ('mTertiary','mPrimary'):
+        try:
+            c=d['dark'][key]
+            m=re.search(r'#([0-9a-fA-F]{6})', str(c))
+            if m: print(m.group(1).lower()); sys.exit(0)
+        except Exception:
+            continue
+except Exception:
+    pass
+PY
+      )
+    fi
+    ;;
+esac
+
+[[ -z "$color" ]] && color="9cd58a"
+
+POLICY_DIRS=(
+  /etc/chromium/policies/managed
+  /etc/opt/chrome/policies/managed
+  /etc/opt/edge/policies/managed
+  /etc/brave/policies/managed
+)
+
+policy_json="{\"BrowserThemeColor\": \"#$color\", \"BrowserColorScheme\": \"device\"}"
+
+for dir in "${POLICY_DIRS[@]}"; do
+  if [[ -d "$dir" ]] || sudo mkdir -p "$dir" 2>/dev/null; then
+    echo "$policy_json" | sudo tee "$dir/color.json" >/dev/null 2>&1
+    sudo chown root:root "$dir/color.json" 2>/dev/null || true
+    sudo chmod 644 "$dir/color.json" 2>/dev/null || true
+  fi
+done
+
+for cmd in google-chrome chromium chromium-browser microsoft-edge brave brave-browser; do
+  if command -v "$cmd" >/dev/null; then
+    "$cmd" --refresh-platform-policy --no-startup-window >/dev/null 2>&1 &
+  fi
+done

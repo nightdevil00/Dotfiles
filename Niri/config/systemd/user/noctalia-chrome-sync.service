@@ -1,0 +1,11 @@
+[Unit]
+Description=Sync Noctalia theme to Chromium-based browsers
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/noctalia-theme-sync-chrome
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=default.target

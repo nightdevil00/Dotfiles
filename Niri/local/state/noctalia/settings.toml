@@ -95,6 +95,7 @@ wallpaper_scheme = "vibrant"
 
     [theme.templates]
     builtin_ids = [ "alacritty", "gtk3", "gtk4", "niri", "qt" ]
+    community_ids = [ "chromium-based" ]
 
 [wallpaper.default]
 path = "/home/mihai/Pictures/Wallpapers/macos-sequoia-forest-3840x2160-24082.jpg"

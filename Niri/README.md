@@ -11,7 +11,9 @@ plugins, and the Omarchy-style universal clipboard helper from this machine.
 | `config/noctalia/config.toml` | `~/.config/noctalia/config.toml` | Noctalia boot configuration (polkit agent) |
 | `local/state/noctalia/settings.toml` | `~/.local/state/noctalia/settings.toml` | Active Noctalia settings: bar, theme, wallpaper, plugins, clipboard |
 | `local/bin/niri-universal-clipboard` | `~/.local/bin/niri-universal-clipboard` | `Super+A/C/X/V` clipboard helper used by `cfg/keybinds.kdl` |
+| `local/bin/noctalia-theme-sync-chrome` | `~/.local/bin/noctalia-theme-sync-chrome` | Syncs the Noctalia shell accent color to Chromium/Chrome/Edge/Brave via enterprise policy |
 | `local/state/noctalia/plugins/materialized/community/` | `~/.local/state/noctalia/plugins/materialized/community/` | DropWall, Niri Animations, and Spotify Media plugins |
+| `config/systemd/user/noctalia-chrome-sync.{path,service}` | `~/.config/systemd/user/` | Auto-sync Noctalia accent color to Chromium-based browsers |
 
 The installer honors `XDG_CONFIG_HOME` and `XDG_STATE_HOME`. The clipboard
 helper always installs to `~/.local/bin` because the niri keybinds reference
@@ -74,6 +76,29 @@ sudo pacman -S --needed niri noctalia wtype jq
 - The plugin files here are Noctalia's materialized copies, not the plugin
   source repositories. Noctalia can update or reinstall them from its plugin
   settings if needed.
+
+### Chrome/Chromium theme sync
+
+The sync helper writes `BrowserThemeColor` to `/etc/{chromium,opt/chrome,opt/edge,brave}/policies/managed/color.json`
+and needs passwordless sudo for those paths. Install the sudoers rule (once, as root):
+
+```sh
+sudo tee /etc/sudoers.d/noctalia-chrome-theme >/dev/null <<'SUDOERS'
+%mihai ALL=(root) NOPASSWD: /usr/bin/tee /etc/chromium/policies/managed/color.json
+%mihai ALL=(root) NOPASSWD: /usr/bin/tee /etc/opt/chrome/policies/managed/color.json
+%mihai ALL=(root) NOPASSWD: /usr/bin/tee /etc/opt/edge/policies/managed/color.json
+%mihai ALL=(root) NOPASSWD: /usr/bin/tee /etc/brave/policies/managed/color.json
+%mihai ALL=(root) NOPASSWD: /usr/bin/mkdir -p /etc/chromium/policies/managed
+%mihai ALL=(root) NOPASSWD: /usr/bin/mkdir -p /etc/opt/chrome/policies/managed
+%mihai ALL=(root) NOPASSWD: /usr/bin/mkdir -p /etc/opt/edge/policies/managed
+%mihai ALL=(root) NOPASSWD: /usr/bin/mkdir -p /etc/brave/policies/managed
+%mihai ALL=(root) NOPASSWD: /usr/bin/chown root\:root *
+%mihai ALL=(root) NOPASSWD: /usr/bin/chmod 644 *
+SUDOERS
+```
+
+Adjust `%mihai` to your username. The systemd path unit is enabled automatically
+by the installer; it watches Noctalia settings and re-syncs on wallpaper/theme changes.
 
 ## Universal clipboard
 
